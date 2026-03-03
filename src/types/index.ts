@@ -74,6 +74,49 @@ export interface InputConditions {
   ageGroup: string;
 }
 
+// ===== 일정 관리 타입 =====
+export interface Schedule {
+  id: string;
+  title: string;
+  category: string;
+  eventDate: string;
+  eventTime?: string;
+  location?: string;
+  targetName: string;
+  relationship: string;
+  expectedAmount?: number;
+  memo?: string;
+  isCompleted: boolean;
+  createdAt: string;
+}
+
+// ===== 연간 리포트 타입 =====
+export interface MonthlyBreakdown {
+  month: string;
+  sent: number;
+  received: number;
+}
+
+export interface CategoryBreakdown {
+  category: string;
+  sent: number;
+  received: number;
+  count: number;
+}
+
+export interface YearlyStats {
+  totalSent: number;
+  totalReceived: number;
+  difference: number;
+  monthlyBreakdown: MonthlyBreakdown[];
+  categoryBreakdown: CategoryBreakdown[];
+  topSpending: EventRecord | null;
+  avgAmount: number;
+  totalCount: number;
+  busiestMonth: string;
+  topCategory: string;
+}
+
 export interface RecentQuery {
   category: string;
   relationship: string;

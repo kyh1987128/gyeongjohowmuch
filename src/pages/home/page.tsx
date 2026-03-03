@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CategoryCard from '../../components/CategoryCard';
-import type { CategoryInfo, RecentQuery } from '../../types';
-import { getRecentQueries, deleteRecentQuery } from '../../utils/storage';
-import { formatCategoryName } from '../../utils/format';
+import type { CategoryInfo, RecentQuery, Schedule } from '../../types';
+import { getRecentQueries, deleteRecentQuery, getUpcomingSchedules } from '../../utils/storage';
+import { formatCategoryName, formatDday, formatDateFull, getDday } from '../../utils/format';
 
 const categories = [
   { id: '결혼식', name: '결혼식', emoji: '💒', bgColor: '#FFF5F5' },
@@ -27,16 +27,23 @@ const categories = [
 export default function Home() {
   const navigate = useNavigate();
   const [recentQueries, setRecentQueries] = useState<RecentQuery[]>([]);
+  const [nextSchedule, setNextSchedule] = useState<Schedule | null>(null);
 
   useEffect(() => {
     const myInfo = localStorage.getItem('gyeongjo_myinfo');
     if (!myInfo) {
       navigate('/myinfo', { replace: true });
     }
-    
+
     // 최근 조회 불러오기
     const queries = getRecentQueries();
     setRecentQueries(queries.slice(0, 2)); // 최대 2개만 표시
+
+    // 다가오는 일정 불러오기
+    const upcoming = getUpcomingSchedules();
+    if (upcoming.length > 0) {
+      setNextSchedule(upcoming[0]);
+    }
   }, [navigate]);
 
   const handleCategoryClick = (category: CategoryInfo) => {
@@ -91,7 +98,13 @@ export default function Home() {
             />
             <h1 className="text-xl font-bold text-[#191F28]">경조사비 얼마?</h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => navigate('/schedules')}
+              className="w-10 h-10 flex items-center justify-center text-xl cursor-pointer transition-all active:scale-[0.97]"
+            >
+              📅
+            </button>
             <button
               onClick={() => navigate('/myinfo')}
               className="w-10 h-10 flex items-center justify-center text-xl cursor-pointer transition-all active:scale-[0.97]"
@@ -151,6 +164,41 @@ export default function Home() {
             </div>
           </div>
         )}
+
+
+        {/* 다가오는 일정 배너 */}
+        {nextSchedule && (
+          <div
+            onClick={() => navigate('/schedules')}
+            className="mb-6 bg-gradient-to-r from-[#3182F6] to-[#1B64DA] rounded-2xl p-4 cursor-pointer transition-all active:scale-[0.98] shadow-[0_4px_12px_rgba(49,130,246,0.3)]"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-white/70 text-xs font-medium mb-1">📅 다가오는 일정 {formatDday(nextSchedule.eventDate)}</p>
+                <p className="text-white text-base font-bold">
+                  {getCategoryEmoji(nextSchedule.category)} {nextSchedule.targetName}
+                </p>
+                <p className="text-white/80 text-sm mt-0.5">{formatDateFull(nextSchedule.eventDate)}</p>
+              </div>
+              <span className="text-white text-2xl font-bold">{formatDday(nextSchedule.eventDate)}</span>
+            </div>
+          </div>
+        )}
+
+        {/* 퀴즈 배너 */}
+        <div
+          onClick={() => navigate('/quiz')}
+          className="mb-8 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] rounded-2xl p-5 cursor-pointer transition-all active:scale-[0.98] shadow-[0_4px_12px_rgba(79,70,229,0.3)]"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white text-xs font-medium mb-1 opacity-80">🧠 경조사 센스 테스트</p>
+              <p className="text-white text-lg font-bold">나의 경조사 레벨은?</p>
+              <p className="text-white text-sm mt-1 opacity-70">5문제로 알아보는 경조사 센스</p>
+            </div>
+            <span className="text-3xl">📝</span>
+          </div>
+        </div>
 
         <div className="grid grid-cols-3 gap-4">
           {categories.map((category) => (

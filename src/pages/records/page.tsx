@@ -104,11 +104,20 @@ export default function Records({ onBack, onAddRecord }: RecordsProps) {
   };
 
   const handleShare = async () => {
-    const records = getRecords();
-    const success = await shareNative(records);
-    if (success) {
-      setToast('공유되었어요!');
-    } else {
+    try {
+      const records = getRecords();
+      const text = records.map((r: any) => `${getCategoryName(r.categoryId)} | ${r.relationship} | ${formatAmount(r.amount)}원 | ${formatDate(r.date)}`).join('\n');
+      if (typeof window !== 'undefined' && (window as any).TossApp && (window as any).TossApp.share) {
+        await (window as any).TossApp.share({ text });
+        setToast('공유되었어요!');
+      } else if (navigator.share) {
+        await navigator.share({ title: '내 경조사 기록', text });
+        setToast('공유되었어요!');
+      } else {
+        await navigator.clipboard.writeText(text);
+        setToast('클립보드에 복사되었어요!');
+      }
+    } catch (e) {
       setToast('공유에 실패했어요');
     }
   };
@@ -149,12 +158,6 @@ export default function Records({ onBack, onAddRecord }: RecordsProps) {
         </div>
 
         <header className="flex items-center gap-3 py-5">
-          <button
-            onClick={() => onBack ? onBack() : navigate('/')}
-            className="w-10 h-10 flex items-center justify-center text-2xl cursor-pointer transition-all active:scale-[0.97]"
-          >
-            ←
-          </button>
           <h1 className="text-xl font-bold text-[#191F28]">📋 내 경조사 기록장</h1>
         </header>
 
@@ -263,23 +266,35 @@ export default function Records({ onBack, onAddRecord }: RecordsProps) {
                 ))}
             </div>
 
+            {/* 연간 리포트 버튼 (5건 이상일 때) */}
+            {allRecords.length >= 5 && (
+              <div
+                onClick={() => navigate('/report')}
+                className="mb-6 bg-gradient-to-r from-[#03B26C] to-[#00897B] rounded-2xl p-5 cursor-pointer transition-all active:scale-[0.98] shadow-[0_4px_12px_rgba(3,178,108,0.3)]"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-white/80 text-xs font-medium mb-1">📊 내 경조사 데이터 분석</p>
+                    <p className="text-white text-lg font-bold">연간 리포트 보기</p>
+                    <p className="text-white/70 text-sm mt-1">총 {allRecords.length}건의 기록 분석</p>
+                  </div>
+                  <span className="text-3xl">📊</span>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3 mb-6">
               <Button onClick={handleShare} fullWidth>
                 📤 공유하기
               </Button>
-              <div className="grid grid-cols-2 gap-3">
-                <Button onClick={handleKakaoShare} variant="secondary">
-                  💬 카톡복사
-                </Button>
-                <Button onClick={handleExcelExport} variant="secondary">
-                  📊 엑셀
-                </Button>
-              </div>
+              <Button onClick={handleKakaoShare} variant="secondary" fullWidth>
+                💬 카톡복사
+              </Button>
             </div>
           </>
         )}
 
-        <Button onClick={() => onAddRecord ? onAddRecord() : navigate('/')} variant="outline" fullWidth>
+        <Button onClick={() => onAddRecord ? onAddRecord() : navigate('/home')} variant="outline" fullWidth>
           + 새 기록 추가
         </Button>
       </div>

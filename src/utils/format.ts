@@ -45,6 +45,38 @@ export const getCategoryName = (category: string): string => {
   return category;
 };
 
+// D-day 계산 (오늘 기준)
+export const getDday = (dateString: string): number => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(dateString);
+  target.setHours(0, 0, 0, 0);
+  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+};
+
+// D-day 텍스트 포맷 ("D-3", "D-Day", "D+2")
+export const formatDday = (dateString: string): string => {
+  const diff = getDday(dateString);
+  if (diff === 0) return 'D-Day';
+  if (diff > 0) return `D-${diff}`;
+  return `D+${Math.abs(diff)}`;
+};
+
+// 날짜를 "3월 7일 (토)" 형식으로 포맷
+export const formatDateFull = (dateString: string): string => {
+  const date = new Date(dateString);
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+  const dayName = dayNames[date.getDay()];
+  return `${month}월 ${day}일 (${dayName})`;
+};
+
+// 연월 포맷 ("2026년 3월")
+export const formatMonth = (year: string, month: number): string => {
+  return `${year}년 ${month}월`;
+};
+
 export const formatCategoryName = (category: string): string => {
   // 용돈 하위 카테고리는 "용돈 · 명절" 형식으로 표시
   const subcategories = ['명절', '세뱃돈', '격려금'];
