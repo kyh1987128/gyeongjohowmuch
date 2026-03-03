@@ -229,7 +229,9 @@ export default function Result() {
   const [data, setData] = useState<RecommendationResponse | null>(null);
   const [toast, setToast] = useState('');
   const [animatedAmount, setAnimatedAmount] = useState(0);
-  const [adCountdown, setAdCountdown] = useState(3);
+  const [detailUnlocked, setDetailUnlocked] = useState(false);
+  const [isAd1Loading, setIsAd1Loading] = useState(false);
+  const [isAd2Loading, setIsAd2Loading] = useState(false);
   const [progress, setProgress] = useState(0);
 
   const [sliderAmount, setSliderAmount] = useState(0);
@@ -264,7 +266,7 @@ export default function Result() {
     }
 
     if (!conditions.category || !conditions.relationship || !conditions.closeness) {
-      setPhase('done');
+      setPhase('adReady');
       setData(MOCK_DATA);
       setSliderAmount(MOCK_DATA.recommendation.recommended);
       return;
@@ -339,15 +341,15 @@ export default function Result() {
     }
   }, [fetchRecommendation, hasRequiredParams]);
 
-  useEffect(() => {
-    if (phase !== 'showAd') return;
-    if (adCountdown <= 0) {
-      setPhase('done');
-      return;
-    }
-    const timer = setTimeout(() => setAdCountdown((c) => c - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [phase, adCountdown]);
+  // REMOVED: useEffect(() => {
+  // REMOVED: if (phase !== 'showAd') return;
+  // REMOVED: if (adCountdown <= 0) {
+  // REMOVED: setPhase('done');
+  // REMOVED: return;
+  // REMOVED: }
+  // REMOVED: const timer = setTimeout(() => setAdCountdown((c) => c - 1), 1000);
+  // REMOVED: return () => clearTimeout(timer);
+  // REMOVED: }, [phase, adCountdown]);
 
   useEffect(() => {
     if (phase !== 'done' || !data) return;
@@ -459,7 +461,7 @@ export default function Result() {
   };
 
   const handleGoHome = () => {
-    navigate('/');
+    navigate('/home');
   };
 
   const handleTossSend = () => {
@@ -563,8 +565,43 @@ export default function Result() {
     );
   }
 
-  // ─── Phase 2: 분석 완료 ───
+  // ─── Phase 2: 분석 완료 → 리워드 광고 → 결과 ───
   if (phase === 'adReady') {
+    const handleWatchAd1 = async () => {
+      setIsAd1Loading(true);
+      try {
+        const mod = await import('@apps-in-toss/web-framework');
+        const adGroupId = 'ait.v2.live.c05b1d17ceda40da';
+        if (mod.loadFullScreenAd && mod.loadFullScreenAd.isSupported()) {
+          mod.loadFullScreenAd({
+            options: { adGroupId },
+            onEvent: (event: any) => {
+              if (event.type === 'loaded') {
+                mod.showFullScreenAd({
+                  options: { adGroupId },
+                  onEvent: (showEvent: any) => {
+                    if (showEvent.type === 'userEarnedReward' || showEvent.type === 'dismissed') {
+                      setIsAd1Loading(false);
+                      setPhase('done');
+                    }
+                  },
+                  onError: () => { setIsAd1Loading(false); setPhase('done'); },
+                });
+              }
+            },
+            onError: () => { setIsAd1Loading(false); setPhase('done'); },
+          });
+        } else {
+          setIsAd1Loading(false);
+          setPhase('done');
+        }
+      } catch (e) {
+        console.log('Ad1 error:', e);
+        setIsAd1Loading(false);
+        setPhase('done');
+      }
+    };
+
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center px-5">
         <div className="max-w-[480px] w-full text-center">
@@ -572,48 +609,24 @@ export default function Result() {
           <p className="text-xl text-[#191F28] font-bold mb-3">
             분석이 완료되었어요!
           </p>
-          <p className="text-sm text-[#8B95A1] mb-10">
+          <p className="text-sm text-[#8B95A1] mb-3">
             {emoji} {categoryName} 맞춤 금액이 준비되었어요
           </p>
+          <p className="text-xs text-[#B0B8C1] mb-10">
+            짧은 광고 후 AI 추천 금액을 확인할 수 있어요
+          </p>
           <Button
-            onClick={() => {
-              setAdCountdown(3);
-              setPhase('showAd');
-            }}
+            onClick={handleWatchAd1}
+            disabled={isAd1Loading}
             fullWidth
           >
-            결과 확인하기 💌
+            {isAd1Loading ? '광고 불러오는 중...' : '🎬 광고 보고 AI 추천 금액 확인하기'}
           </Button>
         </div>
       </div>
     );
   }
 
-  // ─── Phase 3: 광고 ───
-  if (phase === 'showAd') {
-    return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-5">
-        <div className="max-w-[480px] w-full text-center">
-          <div className="text-5xl mb-6 animate-[shake_0.5s_ease-in-out_infinite]">💌</div>
-          <p className="text-lg text-[#191F28] font-semibold mb-8">
-            잠시만요! 곧 결과를 보여드릴게요
-          </p>
-
-          <div className="w-full h-[250px] bg-[#F9FAFB] rounded-3xl flex items-center justify-center mb-8 border border-[#F2F3F5]">
-            <div className="text-center">
-              <p className="text-sm text-[#B0B8C1] mb-1">광고 영역</p>
-              <p className="text-xs text-[#D1D6DB]">AdMob Reward Ad</p>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-center gap-2">
-            <div className="w-2 h-2 bg-[#3182F6] rounded-full animate-pulse" />
-            <p className="text-sm text-[#6B7684]">{adCountdown}초 후 결과 확인</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // ─── Phase 4: 결과 표시 ───
   const displayData = data || MOCK_DATA;
@@ -674,6 +687,65 @@ export default function Result() {
           </div>
 
           {/* 💰 금액 조절 슬라이더 + 퍼센타일 */}
+
+          {/* ─── 리워드 광고 잠금 영역 ─── */}
+          {/* ─── 2차 잠금: 상세 분석 ─── */}
+          {!detailUnlocked && (
+            <div className="bg-gradient-to-b from-[#F0F4FF] to-[#E8F0FE] rounded-3xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)] text-center">
+              <div className="text-4xl mb-4">🔍</div>
+              <h3 className="text-base font-bold text-[#191F28] mb-3">더 자세히 알아볼까요?</h3>
+              <div className="space-y-2 mb-5">
+                <p className="text-sm text-[#6B7684]">📊 이 금액, 상위 몇 %일까?</p>
+                <p className="text-sm text-[#6B7684]">👥 다른 사람들은 얼마나 낼까?</p>
+                <p className="text-sm text-[#6B7684]">💡 에티켓 & 꿀팁까지!</p>
+              </div>
+              <button
+                onClick={async () => {
+                  setIsAd2Loading(true);
+                  try {
+                    const mod = await import('@apps-in-toss/web-framework');
+                    const adGroupId = 'ait.v2.live.c05b1d17ceda40da';
+                    if (mod.loadFullScreenAd && mod.loadFullScreenAd.isSupported()) {
+                      mod.loadFullScreenAd({
+                        options: { adGroupId },
+                        onEvent: (event: any) => {
+                          if (event.type === 'loaded') {
+                            mod.showFullScreenAd({
+                              options: { adGroupId },
+                              onEvent: (showEvent: any) => {
+                                if (showEvent.type === 'userEarnedReward' || showEvent.type === 'dismissed') {
+                                  setIsAd2Loading(false);
+                                  setDetailUnlocked(true);
+                                }
+                              },
+                              onError: () => { setIsAd2Loading(false); setDetailUnlocked(true); },
+                            });
+                          }
+                        },
+                        onError: () => { setIsAd2Loading(false); setDetailUnlocked(true); },
+                      });
+                    } else {
+                      setIsAd2Loading(false);
+                      setDetailUnlocked(true);
+                    }
+                  } catch {
+                    setIsAd2Loading(false);
+                    setDetailUnlocked(true);
+                  }
+                }}
+                disabled={isAd2Loading}
+                className="w-full py-4 rounded-2xl bg-[#3182F6] text-white font-semibold text-sm cursor-pointer transition-all active:scale-[0.97] hover:bg-[#1B64DA] disabled:opacity-50"
+              >
+                {isAd2Loading ? '광고 불러오는 중...' : '🔓 광고 보고 전체 분석 확인하기'}
+              </button>
+              <p className="text-xs text-[#B0B8C1] mt-2">짧은 영상 광고 시청 후 잠금이 해제됩니다</p>
+            </div>
+          )}
+
+          {detailUnlocked && (
+          <>
+
+          {/* 💰 금액 조절 슬라이더 + 퍼센타일 */}
           <div className="bg-[#F9FAFB] rounded-3xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <h3 className="text-base font-semibold text-[#191F28] mb-2">
               💰 금액을 조절해보세요
@@ -698,65 +770,40 @@ export default function Result() {
                 type="range"
                 min={sliderRange.min}
                 max={sliderRange.max}
-                step={sliderRange.step}
+                step={10000}
                 value={sliderAmount}
-                onChange={(e) => handleSliderChange(Number(e.target.value))}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setSliderAmount(val);
+                  setHasAdjusted(true);
+                }}
                 className="w-full h-2 rounded-full appearance-none cursor-pointer"
                 style={{
-                  background: `linear-gradient(to right, #3182F6 ${
-                    ((sliderAmount - sliderRange.min) / (sliderRange.max - sliderRange.min)) * 100
-                  }%, #E5E8EB ${
-                    ((sliderAmount - sliderRange.min) / (sliderRange.max - sliderRange.min)) * 100
-                  }%)`,
+                  background: `linear-gradient(to right, #3182F6 ${((sliderAmount - sliderRange.min) / (sliderRange.max - sliderRange.min)) * 100}%, #E5E8EB ${((sliderAmount - sliderRange.min) / (sliderRange.max - sliderRange.min)) * 100}%)`,
                 }}
               />
-              <div className="flex justify-between mt-1">
+              <div className="flex justify-between mt-2">
                 <span className="text-xs text-[#B0B8C1]">{formatAmount(sliderRange.min)}</span>
                 <span className="text-xs text-[#B0B8C1]">{formatAmount(sliderRange.max)}</span>
               </div>
             </div>
 
-            <div className="flex gap-2 mb-5">
-              {[
-                displayData.recommendation.recommended_min,
-                displayData.recommendation.recommended,
-                displayData.recommendation.recommended_max,
-              ]
-                .filter((v, i, a) => a.indexOf(v) === i)
-                .map((amt) => (
-                  <button
-                    key={amt}
-                    onClick={() => handleSliderChange(amt)}
-                    className={`flex-1 py-2 rounded-xl text-xs font-medium cursor-pointer transition-all active:scale-[0.97] whitespace-nowrap ${
-                      sliderAmount === amt
-                        ? 'bg-[#3182F6] text-white'
-                        : 'bg-white text-[#6B7684] border border-[#E5E8EB]'
-                    }`}
-                  >
-                    {formatAmount(amt)}
-                  </button>
-                ))}
+            <div className="flex gap-2 mb-5 flex-wrap justify-center">
+              {[displayData.recommendation.recommended_min, displayData.recommendation.recommended, displayData.recommendation.recommended_max].map((amt) => (
+                <button
+                  key={amt}
+                  onClick={() => { setSliderAmount(amt); setHasAdjusted(true); }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${sliderAmount === amt ? 'bg-[#3182F6] text-white' : 'bg-[#F2F3F5] text-[#6B7684]'}`}
+                >
+                  {formatAmount(amt)}
+                </button>
+              ))}
             </div>
 
-            <div
-              className="rounded-2xl p-4 text-center"
-              style={{ backgroundColor: `${percentileInfo.color}10` }}
-            >
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <span className="text-2xl">{percentileInfo.emoji}</span>
-                <span
-                  className="text-sm font-semibold px-3 py-1 rounded-full"
-                  style={{
-                    backgroundColor: `${percentileInfo.color}20`,
-                    color: percentileInfo.color,
-                  }}
-                >
-                  {percentileInfo.level}
-                </span>
-              </div>
-              <p className="text-sm text-[#191F28] leading-relaxed">
-                이 금액을 내면 같은 상황에서{' '}
-                <span className="font-bold" style={{ color: percentileInfo.color }}>
+            <div className="bg-white rounded-2xl p-4 text-center">
+              <p className="text-sm text-[#6B7684]">
+                같은 상황에서{' '}
+                <span className="font-bold" style={{ color: percentileInfo.isTop ? '#3182F6' : '#6B7684' }}>
                   {percentileInfo.isTop ? '상위' : '하위'} {percentileInfo.percentile}%
                 </span>
                 에 해당합니다
@@ -776,6 +823,7 @@ export default function Result() {
           <Button onClick={handleOpenCompare} variant="outline" fullWidth>
             🔄 다른 조건으로 비교해보기
           </Button>
+
 
           {/* 📊 추천 근거 섹션 */}
           {displayData.statistics && displayData.reasons && (
@@ -943,12 +991,8 @@ export default function Result() {
             </div>
           )}
 
-          {/* AdMob 배너 */}
-          <div className="flex justify-center">
-            <div className="w-[320px] h-[50px] bg-[#F9FAFB] rounded-2xl flex items-center justify-center border border-[#F2F3F5]">
-              <p className="text-xs text-[#D1D6DB]">AdMob Banner</p>
-            </div>
-          </div>
+          </>
+          )}
 
           {/* 버튼 영역 */}
           <div className="space-y-3 pt-2">
