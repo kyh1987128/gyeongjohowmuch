@@ -42,7 +42,7 @@ export default function MyInfo() {
     };
 
     localStorage.setItem('gyeongjo_myinfo', JSON.stringify(myInfo));
-    navigate('/');
+    navigate('/home');
   };
 
   return (
@@ -51,7 +51,7 @@ export default function MyInfo() {
         {isEdit && (
           <header className="flex items-center gap-3 py-5">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/home')}
               className="w-10 h-10 flex items-center justify-center text-2xl cursor-pointer transition-all active:scale-[0.97]"
             >
               ←

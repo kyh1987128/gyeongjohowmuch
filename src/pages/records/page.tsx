@@ -147,15 +147,6 @@ export default function Records({ onBack, onAddRecord }: RecordsProps) {
   return (
     <div className="min-h-screen bg-white pb-8">
       <div className="max-w-[480px] mx-auto px-5">
-        {/* AdMob Banner Placeholder - Records */}
-        <div className="pt-5 pb-3 flex justify-center">
-          <div
-            id="admob-banner-records"
-            className="w-[320px] h-[50px] bg-[#F2F3F5] rounded-2xl flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-          >
-            <p className="text-xs text-[#B0B8C1]">AdMob Banner</p>
-          </div>
-        </div>
 
         <header className="flex items-center gap-3 py-5">
           <h1 className="text-xl font-bold text-[#191F28]">📋 내 경조사 기록장</h1>

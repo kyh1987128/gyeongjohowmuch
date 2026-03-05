@@ -580,9 +580,12 @@ export default function Result() {
                 mod.showFullScreenAd({
                   options: { adGroupId },
                   onEvent: (showEvent: any) => {
-                    if (showEvent.type === 'userEarnedReward' || showEvent.type === 'dismissed') {
+                    if (showEvent.type === 'userEarnedReward') {
                       setIsAd1Loading(false);
                       setPhase('done');
+                    } else if (showEvent.type === 'dismissed') {
+                      setIsAd1Loading(false);
+                      setToast('광고를 끝까지 보면 결과를 확인할 수 있어요');
                     }
                   },
                   onError: () => { setIsAd1Loading(false); setPhase('done'); },
@@ -713,9 +716,12 @@ export default function Result() {
                             mod.showFullScreenAd({
                               options: { adGroupId },
                               onEvent: (showEvent: any) => {
-                                if (showEvent.type === 'userEarnedReward' || showEvent.type === 'dismissed') {
+                                if (showEvent.type === 'userEarnedReward') {
                                   setIsAd2Loading(false);
                                   setDetailUnlocked(true);
+                                } else if (showEvent.type === 'dismissed') {
+                                  setIsAd2Loading(false);
+                                  setToast('광고를 끝까지 보면 상세 분석을 확인할 수 있어요');
                                 }
                               },
                               onError: () => { setIsAd2Loading(false); setDetailUnlocked(true); },

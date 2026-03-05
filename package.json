@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@apps-in-toss/web-framework": "^1.13.0",
     "@stripe/react-stripe-js": "4.0.2",
     "@supabase/supabase-js": "2.57.4",
     "firebase": "12.0.0",
@@ -35,11 +36,12 @@
   "name": "react",
   "private": true,
   "scripts": {
-    "build": "vite build",
-    "dev": "vite",
+    "build": "granite build",
+    "dev": "granite dev",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "type-check": "tsc --noEmit --project tsconfig.app.json"
+    "type-check": "tsc --noEmit --project tsconfig.app.json",
+    "deploy": "ait deploy"
   },
   "type": "module",
   "version": "0.0.0"

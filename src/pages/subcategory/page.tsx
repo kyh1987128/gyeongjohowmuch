@@ -14,12 +14,6 @@ export default function Subcategory() {
     <div className="min-h-screen bg-white pb-8">
       <div className="max-w-[480px] mx-auto px-5">
         <header className="flex items-center gap-3 py-5">
-          <button
-            onClick={() => navigate(-1)}
-            className="w-10 h-10 flex items-center justify-center text-2xl cursor-pointer transition-all active:scale-[0.97]"
-          >
-            ←
-          </button>
           <h1 className="text-xl font-bold text-[#191F28]">💰 어떤 용돈이에요?</h1>
         </header>
 

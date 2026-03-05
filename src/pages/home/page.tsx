@@ -98,24 +98,24 @@ export default function Home() {
             />
             <h1 className="text-xl font-bold text-[#191F28]">경조사비 얼마?</h1>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => navigate('/schedules')}
-              className="w-10 h-10 flex items-center justify-center text-xl cursor-pointer transition-all active:scale-[0.97]"
+              className="flex items-center gap-1 px-3 py-2 rounded-xl bg-[#F2F3F5] text-sm text-[#4E5968] font-medium cursor-pointer transition-all active:scale-[0.97] hover:bg-[#E5E8EB]"
             >
-              📅
-            </button>
-            <button
-              onClick={() => navigate('/myinfo')}
-              className="w-10 h-10 flex items-center justify-center text-xl cursor-pointer transition-all active:scale-[0.97]"
-            >
-              ⚙️
+              📅 <span>일정</span>
             </button>
             <button
               onClick={() => navigate('/records')}
-              className="w-10 h-10 flex items-center justify-center text-2xl cursor-pointer transition-all active:scale-[0.97]"
+              className="flex items-center gap-1 px-3 py-2 rounded-xl bg-[#F2F3F5] text-sm text-[#4E5968] font-medium cursor-pointer transition-all active:scale-[0.97] hover:bg-[#E5E8EB]"
             >
-              📋
+              📋 <span>기록</span>
+            </button>
+            <button
+              onClick={() => navigate('/myinfo')}
+              className="flex items-center gap-1 px-3 py-2 rounded-xl bg-[#F2F3F5] text-sm text-[#4E5968] font-medium cursor-pointer transition-all active:scale-[0.97] hover:bg-[#E5E8EB]"
+            >
+              ⚙️ <span>설정</span>
             </button>
           </div>
         </header>

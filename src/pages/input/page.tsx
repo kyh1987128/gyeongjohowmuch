@@ -323,7 +323,7 @@ export default function Input() {
         <div className="text-center">
           <p className="text-gray-600 mb-4">카테고리를 선택해주세요</p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/home')}
             className="px-6 py-3 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-colors"
           >
             홈으로 돌아가기
@@ -338,12 +338,6 @@ export default function Input() {
       <div className="bg-white shadow-sm sticky top-0 z-40">
         <div className="max-w-[480px] mx-auto px-5">
           <header className="flex items-center gap-3 py-5">
-            <button
-              onClick={() => navigate(-1)}
-              className="w-10 h-10 flex items-center justify-center text-2xl cursor-pointer transition-all active:scale-[0.97]"
-            >
-              ←
-            </button>
             <h1 className="text-xl font-bold text-[#191F28]">
               {emoji} {name}
             </h1>
