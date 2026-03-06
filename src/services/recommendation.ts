@@ -209,6 +209,9 @@ const buildResponse = async (
     },
     statistics: {
       average,
+      category_average: average,
+      filtered_count: 0,
+      total_count: 0,
       distribution,
       source: guide.source || 'AI 분석 기반 추천',
     },
@@ -223,6 +226,7 @@ const buildResponse = async (
       tone: t.tone,
     })),
     etiquette: getEtiquette(category),
+    products: [],
   };
 };
 
